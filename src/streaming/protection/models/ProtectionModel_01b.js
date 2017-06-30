@@ -142,13 +142,19 @@ function ProtectionModel_01b(config) {
                 // Look for supported video container/codecs
                 if (videos && videos.length !== 0) {
                     supportedVideo = []; // Indicates that we have a requested video config
-                    for (let videoIdx = 0; videoIdx < videos.length; videoIdx++) {
-                        if (ve.canPlayType(videos[videoIdx].contentType, systemString) !== '') {
-                            supportedVideo.push(videos[videoIdx]);
+                    for (var videoIdx = 0; videoIdx < videos.length; videoIdx++) {
+                        //[Eric Li] Tizen do not support this canPlayType() with 2 parameters
+                        if (!window.tizen) {
+                            if (ve.canPlayType(videos[videoIdx].contentType, systemString) !== '') {
+                                supportedVideo.push(videos[videoIdx]);
+                            }
+                        } else {
+                            if (ve.canPlayType(videos[videoIdx].contentType) !== '') {
+                                supportedVideo.push(videos[videoIdx]);
+                            }
                         }
                     }
                 }
-
                 // No supported audio or video in this configuration OR we have
                 // requested audio or video configuration that is not supported
                 if ((!supportedAudio && !supportedVideo) ||
@@ -255,10 +261,14 @@ function ProtectionModel_01b(config) {
 
     function closeKeySession(sessionToken) {
         // Send our request to the CDM
-        try {
-            videoElement[api.cancelKeyRequest](keySystem.systemString, sessionToken.sessionID);
-        } catch (error) {
-            eventBus.trigger(events.KEY_SESSION_CLOSED, {data: null, error: 'Error closing session (' + sessionToken.sessionID + ') ' + error.message});
+        //videoElement[api.cancelKeyRequest](keySystem.systemString, sessionToken.sessionID);
+        if (videoElement && sessionToken && sessionToken.sessionID) {
+            // Send our request to the CDM
+            try {
+                videoElement[api.cancelKeyRequest](this.keySystem.systemString, sessionToken.sessionID);
+            } catch (error) {
+                console.log('Error: exception inside closekeySession!!');
+            }
         }
     }
 
@@ -272,8 +282,8 @@ function ProtectionModel_01b(config) {
                 let sessionToken = null;
                 switch (event.type) {
                     case api.needkey:
-                        let initData = ArrayBuffer.isView(event.initData) ? event.initData.buffer : event.initData;
-                        eventBus.trigger(events.NEED_KEY, {key: new NeedKey(initData, 'cenc')});
+                        var initData = ArrayBuffer.isView && ArrayBuffer.isView(event.initData) ? event.initData.buffer : event.initData;
+                        eventBus.trigger(Events.NEED_KEY, {key: new NeedKey(initData, 'cenc')});
                         break;
 
                     case api.keyerror:
@@ -363,7 +373,7 @@ function ProtectionModel_01b(config) {
                         }
 
                         if (sessionToken) {
-                            let message = ArrayBuffer.isView(event.message) ? event.message.buffer : event.message;
+                            var message = ArrayBuffer.isView && ArrayBuffer.isView(event.message) ? event.message.buffer : event.message;
 
                             // For ClearKey, the spec mandates that you pass this message to the
                             // addKey method, so we always save it to the token since there is no
