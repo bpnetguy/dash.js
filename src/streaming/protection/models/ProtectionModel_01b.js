@@ -283,7 +283,7 @@ function ProtectionModel_01b(config) {
                 switch (event.type) {
                     case api.needkey:
                         var initData = ArrayBuffer.isView && ArrayBuffer.isView(event.initData) ? event.initData.buffer : event.initData;
-                        eventBus.trigger(Events.NEED_KEY, {key: new NeedKey(initData, 'cenc')});
+                        eventBus.trigger(events.NEED_KEY, {key: new NeedKey(initData, 'cenc')});
                         break;
 
                     case api.keyerror:

@@ -172,7 +172,7 @@ function ProtectionController(config) {
                 var currentInitData = protectionModel.getAllInitData();
                 for (var i = 0; i < currentInitData.length; i++) {
                     if (protectionKeyController.initDataEquals(initDataForKS, currentInitData[i])) {
-                        log('DRM: Ignoring initData because we have already seen it!');
+                        console.log('DRM: Ignoring initData because we have already seen it!');
                         return;
                     }
                 }
